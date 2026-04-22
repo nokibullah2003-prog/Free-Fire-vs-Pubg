@@ -3,7 +3,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Free Fire vs PUBG — Street Brawl</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Orbitron:wght@700;900&family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@700;900&display=swap');
@@ -501,7 +504,7 @@ body { background:var(--dark); font-family:'Rajdhani',sans-serif; overflow:hidde
    TOUCH CONTROLS
 ════════════════════════════════ */
 #touch-controls {
-  display: none;
+  display: flex;
   position: absolute;
   bottom: 0; left: 0; right: 0;
   height: 140px;
@@ -572,57 +575,151 @@ body { background:var(--dark); font-family:'Rajdhani',sans-serif; overflow:hidde
 .tbtn.sp-btn:active, .tbtn.sp-btn.pressed { background: rgba(255,200,0,0.2); }
 
 /* ════════════════════════════════
-   RESPONSIVE — MOBILE
+   RESPONSIVE — MOBILE (FULL REWRITE)
 ════════════════════════════════ */
-@media (max-width: 600px) {
-  .main-title { font-size: 1.2rem; letter-spacing: 2px; }
-  .vs-word { font-size: 0.9rem; }
-  .byline { font-size: 0.55rem; letter-spacing: 2px; margin-bottom: 8px; }
-  .tagline { font-size: 0.55rem; letter-spacing: 3px; margin-bottom: 10px; }
-  #select-screen { padding-top: 10px; overflow-y: auto; }
 
-  .game-logo { font-size: 0.75rem; letter-spacing: 2px; padding: 6px 0 8px; }
+/* ── Always show touch controls, always hide keyboard hint ── */
+.controls-hint { display: none !important; }
+#touch-controls { display: flex !important; }
+#touch-controls.visible { display: flex; }
 
-  .char-card { width: 82px; height: 130px; padding: 5px 4px; }
-  .char-img { height: 88px; }
-  .char-name { font-size: 0.7rem; letter-spacing: 1px; }
-  .char-tag { font-size: 0.42rem; }
-  .chars-row { gap: 6px; }
-
-  .game-side { padding: 0 8px 8px; }
-
-  .player-row { gap: 10px; flex-wrap: wrap; margin-top: 8px; }
-  .player-ind { font-size: 0.65rem; }
-
-  .bottom-bar { padding: 8px; }
-  .btn-fight { padding: 10px 40px; font-size: 0.9rem; letter-spacing: 4px; }
-
-  .hud { padding: 6px 8px 4px; }
-  .fighter-name { font-size: 0.65rem; }
-  .fighter-game-tag { font-size: 0.45rem; }
-  .health-bar-wrap { height: 10px; }
-  .special-bar-wrap { height: 4px; }
-  #timer { font-size: 1.6rem; }
-  #round-display { font-size: 0.5rem; }
-
-  /* hide keyboard hint on mobile, show touch controls */
-  .controls-hint { display: none !important; }
-  #touch-controls { display: flex !important; }
-  #touch-controls.visible { display: flex; }
-
-  #overlay-text { font-size: 3rem; letter-spacing: 4px; }
-
-  #winner-name { font-size: 2rem; letter-spacing: 3px; }
-  #win-char-img { height: 140px; }
-  .btn-action { padding: 9px 28px; font-size: 0.7rem; letter-spacing: 2px; }
+/* ── Prevent tap highlight & selection on all interactive elements ── */
+.tbtn, .char-card, .btn-fight, .btn-action, #toggle-player-btn {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
-@media (max-width: 400px) {
-  .char-card { width: 68px; height: 112px; }
-  .char-img { height: 72px; }
-  .char-name { font-size: 0.6rem; }
-  .tbtn { width: 44px; height: 44px; font-size: 1rem; }
-  .tbtn.wide { width: 60px; font-size: 0.6rem; }
+/* ── Core body: prevent scroll bounce, lock to screen ── */
+html, body {
+  touch-action: manipulation;
+  overscroll-behavior: none;
+}
+
+/* ══════════════════════════════════════
+   SMALL PHONES  ≤ 480px
+══════════════════════════════════════ */
+@media (max-width: 480px) {
+
+  /* — SELECT SCREEN — */
+  #select-screen { padding-top: 8px; overflow: hidden; }
+
+  .main-title { font-size: clamp(0.85rem, 4.5vw, 1.15rem); letter-spacing: 1px; margin-bottom: 1px; }
+  .vs-word { font-size: 0.75rem; margin: 0 5px; }
+  .byline { font-size: 0.48rem; letter-spacing: 2px; margin-bottom: 6px; }
+  .tagline { font-size: 0.48rem; letter-spacing: 2px; margin-bottom: 6px; }
+
+  .select-layout { flex-direction: row; }
+  .game-side { padding: 0 4px 6px; }
+  .game-logo { font-size: clamp(0.58rem, 2.5vw, 0.75rem); letter-spacing: 1px; padding: 4px 0 6px; }
+
+  .chars-row { gap: 4px; flex-wrap: nowrap; }
+  .char-card { width: clamp(60px, 18vw, 80px); height: clamp(95px, 28vw, 126px); padding: 4px 3px; border-radius: 10px; }
+  .char-img { height: clamp(62px, 18vw, 84px); }
+  .char-name { font-size: clamp(0.52rem, 2vw, 0.68rem); letter-spacing: 1px; }
+  .char-tag { font-size: 0.38rem; }
+
+  .player-row { gap: 6px; flex-wrap: wrap; margin-top: 6px; justify-content: center; }
+  .player-ind { font-size: 0.58rem; }
+  #toggle-player-btn { padding: 5px 12px !important; font-size: 0.65rem !important; }
+
+  .bottom-bar { padding: 5px 8px; }
+  .btn-fight { padding: 9px 28px; font-size: 0.78rem; letter-spacing: 3px; }
+
+  /* — GAME SCREEN HUD — */
+  .hud { padding: 4px 6px 3px; }
+  .fighter-info { width: 40%; gap: 2px; }
+  .fighter-name { font-size: 0.58rem; letter-spacing: 1px; }
+  .fighter-game-tag { font-size: 0.38rem; }
+  .health-bar-wrap { height: 8px; }
+  .special-bar-wrap { height: 3px; }
+  #timer { font-size: 1.35rem; }
+  #round-display { font-size: 0.42rem; letter-spacing: 2px; }
+
+  /* — TOUCH CONTROLS — */
+  #touch-controls { height: 120px; }
+  .touch-half { padding: 6px; }
+  .touch-group { gap: 4px; }
+  .touch-row { gap: 4px; }
+  .tbtn { width: 42px; height: 42px; font-size: 0.95rem; }
+  .tbtn.wide { width: 58px; font-size: 0.52rem; }
+
+  /* — OVERLAY & WIN — */
+  #overlay-text { font-size: 2.4rem; letter-spacing: 3px; }
+  #winner-name { font-size: 1.7rem; letter-spacing: 2px; }
+  #win-char-img { height: 120px; margin-bottom: 18px; }
+  .btn-action { padding: 8px 22px; font-size: 0.65rem; letter-spacing: 2px; }
+}
+
+/* ══════════════════════════════════════
+   MEDIUM PHONES  481px – 600px
+══════════════════════════════════════ */
+@media (min-width: 481px) and (max-width: 600px) {
+  #select-screen { padding-top: 10px; overflow: hidden; }
+
+  .main-title { font-size: 1.25rem; letter-spacing: 2px; }
+  .vs-word { font-size: 0.88rem; }
+  .byline { font-size: 0.54rem; letter-spacing: 2px; margin-bottom: 8px; }
+  .tagline { font-size: 0.54rem; letter-spacing: 3px; margin-bottom: 8px; }
+
+  .game-logo { font-size: 0.78rem; letter-spacing: 2px; padding: 6px 0 8px; }
+  .game-side { padding: 0 8px 8px; }
+
+  .chars-row { gap: 5px; }
+  .char-card { width: 78px; height: 122px; padding: 5px 4px; }
+  .char-img { height: 82px; }
+  .char-name { font-size: 0.68rem; letter-spacing: 1px; }
+  .char-tag { font-size: 0.4rem; }
+
+  .player-row { gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+  .player-ind { font-size: 0.62rem; }
+
+  .bottom-bar { padding: 7px; }
+  .btn-fight { padding: 10px 36px; font-size: 0.88rem; letter-spacing: 4px; }
+
+  .hud { padding: 5px 8px 4px; }
+  .fighter-name { font-size: 0.62rem; }
+  .fighter-game-tag { font-size: 0.42rem; }
+  .health-bar-wrap { height: 10px; }
+  .special-bar-wrap { height: 4px; }
+  #timer { font-size: 1.55rem; }
+  #round-display { font-size: 0.48rem; }
+
+  #touch-controls { height: 130px; }
+  .tbtn { width: 47px; height: 47px; font-size: 1.05rem; }
+  .tbtn.wide { width: 64px; font-size: 0.56rem; }
+
+  #overlay-text { font-size: 2.8rem; letter-spacing: 4px; }
+  #winner-name { font-size: 1.9rem; letter-spacing: 2px; }
+  #win-char-img { height: 130px; }
+  .btn-action { padding: 9px 26px; font-size: 0.68rem; letter-spacing: 2px; }
+}
+
+/* ══════════════════════════════════════
+   LANDSCAPE PHONES  (short height)
+══════════════════════════════════════ */
+@media (max-height: 500px) and (orientation: landscape) {
+  #select-screen { padding-top: 4px; overflow-y: auto; }
+  .main-title { font-size: 0.95rem; }
+  .byline { margin-bottom: 4px; font-size: 0.44rem; }
+  .tagline { display: none; }
+  .game-logo { padding: 3px 0 5px; font-size: 0.65rem; }
+  .char-card { width: 62px; height: 98px; }
+  .char-img { height: 64px; }
+  .player-row { margin-top: 4px; }
+  .bottom-bar { padding: 4px; }
+  .btn-fight { padding: 7px 24px; font-size: 0.75rem; }
+
+  /* HUD compact */
+  .hud { padding: 3px 6px 2px; }
+  #timer { font-size: 1.2rem; }
+  .health-bar-wrap { height: 7px; }
+
+  /* Touch controls compact for landscape */
+  #touch-controls { height: 100px; }
+  .tbtn { width: 38px; height: 38px; font-size: 0.88rem; }
+  .tbtn.wide { width: 54px; font-size: 0.48rem; }
+  .touch-half { padding: 4px; }
 }
 </style>
 </head>
@@ -988,8 +1085,8 @@ function update() {
   const spd2 = 3.8 + (f2.char.stats.speed-3)*0.45;
 
   // P1: WASD + G/H/J
-  if (keys['a']||keys['A']) { f1.vx=-spd1; f1.facing=-1; }
-  else if (keys['d']||keys['D']) { f1.vx=spd1; f1.facing=1; }
+  if (keys['a']||keys['A']) { f1.vx=-spd1; f1.facing=1; }
+  else if (keys['d']||keys['D']) { f1.vx=spd1; f1.facing=-1; }
   else f1.vx=0;
   if ((keys['w']||keys['W']) && f1.onGround) { f1.vy=JUMP_FORCE; f1.onGround=false; }
   if (!f1.attacking) {
@@ -999,8 +1096,8 @@ function update() {
   }
 
   // P2: Arrows + N/M/L
-  if (keys['ArrowLeft']) { f2.vx=-spd2; f2.facing=-1; }
-  else if (keys['ArrowRight']) { f2.vx=spd2; f2.facing=1; }
+  if (keys['ArrowLeft']) { f2.vx=-spd2; f2.facing=1; }
+  else if (keys['ArrowRight']) { f2.vx=spd2; f2.facing=-1; }
   else f2.vx=0;
   if (keys['ArrowUp'] && f2.onGround) { f2.vy=JUMP_FORCE; f2.onGround=false; }
   if (!f2.attacking) {
@@ -1021,9 +1118,11 @@ function update() {
     if (Math.abs(f.vx)>0) f.walkCycle+=0.15;
   });
 
-  // Auto-face
-  if (!f1.attacking) f1.facing = f1.x < f2.x ? 1 : -1;
-  if (!f2.attacking) f2.facing = f2.x > f1.x ? -1 : 1;
+  // Auto-face toward opponent only when idle (not pressing movement keys)
+  const p1Moving = keys['a'] || keys['A'] || keys['d'] || keys['D'];
+  const p2Moving = keys['ArrowLeft'] || keys['ArrowRight'];
+  if (!f1.attacking && !p1Moving) f1.facing = f1.x < f2.x ? 1 : -1;
+  if (!f2.attacking && !p2Moving) f2.facing = f2.x > f1.x ? -1 : 1;
 
   // Push apart
   if (rectsOverlap(f1,f2)) {
