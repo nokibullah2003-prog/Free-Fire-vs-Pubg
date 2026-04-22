@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -825,8 +824,31 @@ html, body {
   margin-top: 2px;
   display: none;
 }
+
+/* ── MUSIC CONTROLS ── */
+#music-btn {
+  position: fixed;
+  top: 12px; right: 14px;
+  z-index: 9999;
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,200,0,0.7);
+  background: rgba(0,0,0,0.55);
+  color: #ffd700;
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(6px);
+  transition: all 0.2s;
+  box-shadow: 0 0 12px rgba(255,180,0,0.35);
+}
+#music-btn:hover { background: rgba(255,180,0,0.18); transform: scale(1.1); }
+#music-btn.muted { border-color: rgba(255,255,255,0.25); color: rgba(255,255,255,0.35); box-shadow: none; }
+
 </style>
 </head>
+
+<button id="music-btn" title="Toggle Music">🎵</button>
 <body>
 
 <!-- ─── INTRO SCREEN ─── -->
@@ -1145,6 +1167,7 @@ function goToIntro() {
 }
 
 function goToSelect() {
+  if(window.MusicSystem) window.MusicSystem.playIntro();
   document.getElementById('intro-screen').classList.remove('active');
   clearInterval(timerInterval);
   if (animFrame) cancelAnimationFrame(animFrame);
@@ -1232,7 +1255,7 @@ function startGame() {
 
   showOverlay('ROUND ' + round, '#00d4ff', 1400, () => {
     showOverlay('FIGHT!', '#ff6a00', 900, () => {
-      gameState = 'fighting';
+      gameState = 'fighting'; if(window.MusicSystem) window.MusicSystem.playBattle();
       startTimer();
     });
   });
@@ -1333,7 +1356,7 @@ function checkAttack(att,def) {
   if (dx<range && dy<85) {
     const base = [8,18,35][att.attackType];
     const dmg = Math.round(base*(1+(att.char.stats.power-3)*0.1)*(1-(def.char.stats.defense-1)*0.05));
-    def.hp = Math.max(0, def.hp-dmg);
+    def.hp = Math.max(0, def.hp-dmg); if(window.SFX) window.SFX.hit();
     def.hitCooldown=35; def.hitAnim=14;
     att.sp = Math.min(MAX_SP, att.sp+22);
     spawnParticles(def.x+def.w/2, def.y+def.h/3, att.char.color);
@@ -1385,7 +1408,7 @@ function updateBars() {
 }
 
 function endRound() {
-  if (gameState!=='fighting') return;
+  if (gameState!=='fighting') return; /* endRound guard */
   gameState='roundEnd'; clearInterval(timerInterval);
   const [f1,f2]=fighters;
   let w=null;
@@ -1418,7 +1441,7 @@ function endRound() {
         const _lol=document.getElementById('lol-bubble');
         _lol.style.animation='none'; _lol.offsetHeight; _lol.style.animation='';
         spawnWinParticles(wChar.color);
-        showScreen('win-screen');
+        if(window.MusicSystem) window.MusicSystem.playWin(); showScreen('win-screen');
       });
     },300);
   } else {
@@ -1525,15 +1548,15 @@ function updateAI(aiFighter, target) {
       if (!af.attacking && _aiAttackCooldown <= 0) {
         _aiAttackCooldown = 18 + Math.floor(Math.random() * 15);
         const atk = Math.random();
-        if (atk < 0.45) { af.attacking=true; af.attackType=0; af.attackTimer=20; }
-        else if (atk < 0.8) { af.attacking=true; af.attackType=1; af.attackTimer=30; }
+        if (atk < 0.45) { af.attacking=true; af.attackType=0; af.attackTimer=20; if(window.SFX) window.SFX.punch(); }
+        else if (atk < 0.8) { af.attacking=true; af.attackType=1; af.attackTimer=30; if(window.SFX) window.SFX.kick(); }
         else { af.attacking=true; af.attackType=0; af.attackTimer=20; }
       }
       break;
 
     case 'jump':
       if (af.onGround && _aiJumpCooldown <= 0) {
-        af.vy = JUMP_FORCE; af.onGround = false; _aiJumpCooldown = 45;
+        af.vy = JUMP_FORCE; af.onGround = false; _aiJumpCooldown = 45; if(window.SFX) window.SFX.jump();
       }
       break;
 
@@ -1958,6 +1981,301 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 300));
 </script>
+
+<script>
+// ═══════════════════════════════════════════
+//  MUSIC ENGINE  –  Web Audio API synthesiser
+// ═══════════════════════════════════════════
+(function() {
+  let ctx = null;
+  let masterGain = null;
+  let muted = false;
+  let currentTrack = null;   // { stop }
+  let sfxEnabled = true;
+
+  // ---------- utilities ----------
+  function ensureCtx() {
+    if (!ctx) {
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      masterGain = ctx.createGain();
+      masterGain.gain.value = 0.28;
+      masterGain.connect(ctx.destination);
+    }
+    if (ctx.state === 'suspended') ctx.resume();
+  }
+
+  function note(freq, start, dur, wave='square', vol=0.18) {
+    if (!ctx) return;
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = wave;
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(0, start);
+    g.gain.linearRampToValueAtTime(vol, start + 0.01);
+    g.gain.setValueAtTime(vol, start + dur - 0.04);
+    g.gain.linearRampToValueAtTime(0, start + dur);
+    o.connect(g); g.connect(masterGain);
+    o.start(start); o.stop(start + dur);
+  }
+
+  function drum(freq, start, dur=0.12, vol=0.35) {
+    if (!ctx) return;
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(freq, start);
+    o.frequency.exponentialRampToValueAtTime(freq * 0.3, start + dur);
+    g.gain.setValueAtTime(vol, start);
+    g.gain.exponentialRampToValueAtTime(0.001, start + dur);
+    o.connect(g); g.connect(masterGain);
+    o.start(start); o.stop(start + dur + 0.02);
+  }
+
+  function noise(start, dur=0.08, vol=0.12) {
+    if (!ctx) return;
+    const buf = ctx.createBuffer(1, ctx.sampleRate * dur, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1);
+    const src = ctx.createBufferSource();
+    const g = ctx.createGain();
+    const f = ctx.createBiquadFilter();
+    f.type = 'highpass'; f.frequency.value = 3000;
+    src.buffer = buf;
+    src.connect(f); f.connect(g); g.connect(masterGain);
+    g.gain.setValueAtTime(vol, start);
+    g.gain.exponentialRampToValueAtTime(0.001, start + dur);
+    src.start(start); src.stop(start + dur + 0.01);
+  }
+
+  // ---------- SFX ----------
+  window.SFX = {
+    punch() {
+      ensureCtx();
+      if (muted || !sfxEnabled) return;
+      const t = ctx.currentTime;
+      drum(180, t, 0.08, 0.4);
+      noise(t + 0.01, 0.06, 0.2);
+    },
+    kick() {
+      ensureCtx();
+      if (muted || !sfxEnabled) return;
+      const t = ctx.currentTime;
+      drum(90, t, 0.15, 0.5);
+      noise(t, 0.05, 0.15);
+    },
+    special() {
+      ensureCtx();
+      if (muted || !sfxEnabled) return;
+      const t = ctx.currentTime;
+      [220, 330, 440, 550, 660].forEach((f, i) => note(f, t + i*0.06, 0.12, 'sawtooth', 0.22));
+    },
+    hit() {
+      ensureCtx();
+      if (muted || !sfxEnabled) return;
+      const t = ctx.currentTime;
+      drum(140, t, 0.1, 0.45);
+      noise(t, 0.07, 0.25);
+    },
+    ko() {
+      ensureCtx();
+      if (muted || !sfxEnabled) return;
+      const t = ctx.currentTime;
+      [440, 330, 220, 165].forEach((f, i) => note(f, t + i*0.18, 0.2, 'sawtooth', 0.3));
+    },
+    jump() {
+      ensureCtx();
+      if (muted || !sfxEnabled) return;
+      const t = ctx.currentTime;
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(200, t);
+      o.frequency.exponentialRampToValueAtTime(600, t + 0.12);
+      g.gain.setValueAtTime(0.18, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+      o.connect(g); g.connect(masterGain);
+      o.start(t); o.stop(t + 0.2);
+    },
+    select() {
+      ensureCtx();
+      if (muted || !sfxEnabled) return;
+      const t = ctx.currentTime;
+      note(440, t, 0.07, 'sine', 0.18);
+      note(660, t + 0.07, 0.07, 'sine', 0.18);
+    },
+    countdown() {
+      ensureCtx();
+      if (muted || !sfxEnabled) return;
+      const t = ctx.currentTime;
+      note(880, t, 0.15, 'sine', 0.3);
+    },
+    fight() {
+      ensureCtx();
+      if (muted || !sfxEnabled) return;
+      const t = ctx.currentTime;
+      [440, 550, 660, 880].forEach((f, i) => note(f, t + i*0.07, 0.1, 'sawtooth', 0.28));
+    }
+  };
+
+  // ---------- Tracks ----------
+
+  /* INTRO track: epic cinematic synth loop */
+  function makeIntroTrack() {
+    ensureCtx();
+    const BPM = 128, B = 60/BPM;
+    const loop = 8 * B;         // 8-beat loop
+    let running = true;
+    let startTime = ctx.currentTime + 0.1;
+
+    // Melody notes (pentatonic)
+    const mel = [
+      [330,0],[392,0.5],[440,1],[392,1.5],
+      [330,2],[294,2.5],[330,3],[392,3.5],
+      [440,4],[494,4.5],[523,5],[494,5.5],
+      [440,6],[392,6.5],[330,7],[294,7.5]
+    ];
+    // Bass
+    const bass = [
+      [110,0],[110,2],[147,4],[110,6]
+    ];
+
+    function schedule(base) {
+      if (!running) return;
+      // melody
+      mel.forEach(([f, b]) => note(f, base + b*B, B*0.45, 'sawtooth', 0.12));
+      // bass
+      bass.forEach(([f, b]) => note(f, base + b*B, B*1.8, 'triangle', 0.22));
+      // drums: kick on 1,3, snare on 2,4, hihat every 8th
+      [0,2,4,6].forEach(b => drum(90, base + b*B, 0.14, 0.45));
+      [1,3,5,7].forEach(b => { drum(220, base + b*B, 0.06, 0.28); noise(base+b*B, 0.05, 0.18); });
+      for (let i=0;i<16;i++) noise(base+i*B*0.5, 0.04, 0.06);
+    }
+
+    function tick() {
+      if (!running) return;
+      if (ctx.currentTime >= startTime - loop * 0.25) {
+        schedule(startTime);
+        startTime += loop;
+      }
+      setTimeout(tick, (loop * 1000) * 0.5);
+    }
+    schedule(startTime);
+    startTime += loop;
+    setTimeout(tick, (loop * 1000) * 0.4);
+
+    return { stop() { running = false; } };
+  }
+
+  /* BATTLE track: aggressive fast-paced loop */
+  function makeBattleTrack() {
+    ensureCtx();
+    const BPM = 160, B = 60/BPM;
+    const loop = 4 * B;
+    let running = true;
+    let startTime = ctx.currentTime + 0.05;
+
+    const mel = [
+      [440,0],[0,0.25],[392,0.5],[0,0.75],
+      [330,1],[440,1.25],[494,1.5],[0,1.75],
+      [523,2],[0,2.25],[440,2.5],[392,2.75],
+      [330,3],[294,3.25],[330,3.5],[0,3.75]
+    ];
+    const bass = [
+      [110,0],[110,0.5],[147,1],[110,1.5],
+      [110,2],[165,2.5],[147,3],[110,3.5]
+    ];
+
+    function schedule(base) {
+      if (!running) return;
+      mel.forEach(([f, b]) => { if(f>0) note(f, base+b*B, B*0.22, 'square', 0.14); });
+      bass.forEach(([f, b]) => note(f, base+b*B, B*0.45, 'triangle', 0.26));
+      // fast kick every beat, snare on 2&4
+      for(let i=0;i<8;i++) drum(90, base+i*B*0.5, 0.1, 0.5);
+      [1,3].forEach(b => { drum(240, base+b*B, 0.07, 0.32); noise(base+b*B, 0.06, 0.22); });
+      for(let i=0;i<16;i++) noise(base+i*B*0.25, 0.03, 0.04);
+    }
+
+    function tick() {
+      if (!running) return;
+      if (ctx.currentTime >= startTime - loop * 0.3) {
+        schedule(startTime);
+        startTime += loop;
+      }
+      setTimeout(tick, (loop * 1000) * 0.4);
+    }
+    schedule(startTime);
+    startTime += loop;
+    setTimeout(tick, (loop * 1000) * 0.3);
+
+    return { stop() { running = false; } };
+  }
+
+  /* WIN fanfare (plays once) */
+  function makeWinTrack() {
+    ensureCtx();
+    const t = ctx.currentTime + 0.1;
+    const fanfare = [
+      [523,0,0.2],[659,0.22,0.2],[784,0.44,0.2],
+      [1047,0.66,0.5],[784,1.2,0.15],[880,1.4,0.15],[1047,1.6,0.6]
+    ];
+    fanfare.forEach(([f,s,d]) => note(f, t+s, d, 'sawtooth', 0.25));
+    // triumphant drums
+    [0, 0.44, 0.66, 1.2, 1.6].forEach(s => drum(90, t+s, 0.12, 0.45));
+    return { stop() {} };
+  }
+
+  // ---------- Track switching ----------
+  function stopCurrent() {
+    if (currentTrack) { currentTrack.stop(); currentTrack = null; }
+  }
+
+  window.MusicSystem = {
+    playIntro()  { ensureCtx(); stopCurrent(); if(!muted) currentTrack = makeIntroTrack(); },
+    playBattle() { ensureCtx(); stopCurrent(); if(!muted) currentTrack = makeBattleTrack(); },
+    playWin()    { ensureCtx(); stopCurrent(); if(!muted) currentTrack = makeWinTrack(); },
+    stop()       { stopCurrent(); },
+    setMute(m)   {
+      muted = m;
+      if (muted) stopCurrent();
+      masterGain && (masterGain.gain.value = muted ? 0 : 0.28);
+    },
+    isMuted()    { return muted; }
+  };
+
+  // ---------- Mute button ----------
+  const btn = document.getElementById('music-btn');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      muted = !muted;
+      btn.textContent = muted ? '🔇' : '🎵';
+      btn.classList.toggle('muted', muted);
+      if (muted) {
+        stopCurrent();
+      } else {
+        // resume whichever screen is active
+        const gs = document.getElementById('game-screen');
+        const ws = document.getElementById('win-screen');
+        const ss = document.getElementById('select-screen');
+        if (gs && gs.classList.contains('active')) window.MusicSystem.playBattle();
+        else if (ws && ws.classList.contains('active')) window.MusicSystem.playWin();
+        else window.MusicSystem.playIntro();
+      }
+    });
+  }
+
+  // ---------- Auto-start intro on first user interaction ----------
+  function onFirstTouch() {
+    ensureCtx();
+    window.MusicSystem.playIntro();
+    document.removeEventListener('click', onFirstTouch);
+    document.removeEventListener('touchstart', onFirstTouch);
+  }
+  document.addEventListener('click', onFirstTouch);
+  document.addEventListener('touchstart', onFirstTouch);
+
+})();
+</script>
+
 </body>
 </html// AI brain call
   if (aiPlayer !== null && gameState === 'fighting') {
@@ -1994,7 +2312,7 @@ function checkAttack(att,def) {
   if (dx<range && dy<85) {
     const base = [8,18,35][att.attackType];
     const dmg = Math.round(base*(1+(att.char.stats.power-3)*0.1)*(1-(def.char.stats.defense-1)*0.05));
-    def.hp = Math.max(0, def.hp-dmg);
+    def.hp = Math.max(0, def.hp-dmg); if(window.SFX) window.SFX.hit();
     def.hitCooldown=35; def.hitAnim=14;
     att.sp = Math.min(MAX_SP, att.sp+22);
     spawnParticles(def.x+def.w/2, def.y+def.h/3, att.char.color);
@@ -2177,7 +2495,7 @@ function updateAI(aiFighter, target) {
 
     case 'jump':
       if (af.onGround && _aiJumpCooldown <= 0) {
-        af.vy = JUMP_FORCE; af.onGround = false; _aiJumpCooldown = 45;
+        af.vy = JUMP_FORCE; af.onGround = false; _aiJumpCooldown = 45; if(window.SFX) window.SFX.jump();
       }
       break;
 
