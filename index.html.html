@@ -126,16 +126,33 @@ body { background:var(--dark); font-family:'Rajdhani',sans-serif; overflow:hidde
   align-items: center;
   justify-content: flex-start;
   padding-top: 14px;
-  background: radial-gradient(ellipse at 50% -20%, #1a0505 0%, #070a0e 60%);
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(255,60,0,0.45) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 0%, rgba(245,197,24,0.35) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 100%, rgba(26,140,255,0.25) 0%, transparent 60%),
+    linear-gradient(160deg, #0d0418 0%, #0a0e1a 40%, #110a00 70%, #06090f 100%);
   overflow: hidden;
 }
 #select-screen::before {
   content:'';
   position:absolute; inset:0;
   background:
-    repeating-linear-gradient(0deg,transparent,transparent 50px,rgba(255,106,0,0.025) 50px,rgba(255,106,0,0.025) 51px),
-    repeating-linear-gradient(90deg,transparent,transparent 50px,rgba(255,106,0,0.025) 50px,rgba(255,106,0,0.025) 51px);
+    repeating-linear-gradient(0deg,transparent,transparent 50px,rgba(255,106,0,0.04) 50px,rgba(255,106,0,0.04) 51px),
+    repeating-linear-gradient(90deg,transparent,transparent 50px,rgba(245,197,24,0.04) 50px,rgba(245,197,24,0.04) 51px);
   pointer-events:none;
+}
+#select-screen::after {
+  content:'';
+  position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse at 15% 50%, rgba(255,34,68,0.08) 0%, transparent 45%),
+    radial-gradient(ellipse at 85% 50%, rgba(26,140,255,0.08) 0%, transparent 45%);
+  pointer-events:none;
+  animation: selectBgPulse 5s ease-in-out infinite alternate;
+}
+@keyframes selectBgPulse {
+  0%   { opacity: 0.6; }
+  100% { opacity: 1; }
 }
 
 /* ─── GOLDEN TITLE ─── */
