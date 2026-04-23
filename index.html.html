@@ -628,16 +628,97 @@ body { background:var(--dark); font-family:'Rajdhani',sans-serif; overflow:hidde
 /* ════════════════════════════════
    WIN SCREEN
 ════════════════════════════════ */
+/* ════════════════════════════════
+   WIN SCREEN — ENHANCED
+════════════════════════════════ */
 #win-screen {
   flex-direction:column; align-items:center; justify-content:center;
-  background:radial-gradient(ellipse at center,#1a0505 0%,#070a0e 70%);
+  background:
+    radial-gradient(ellipse at 50% 0%,   rgba(255,100,0,0.55) 0%, transparent 55%),
+    radial-gradient(ellipse at 20% 80%,  rgba(255,34,68,0.35) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%,  rgba(255,200,0,0.3)  0%, transparent 50%),
+    radial-gradient(ellipse at 50% 110%, rgba(26,140,255,0.2)  0%, transparent 55%),
+    linear-gradient(160deg, #0e0005 0%, #0a0010 40%, #120800 70%, #07090f 100%);
   overflow:hidden; position:relative;
 }
-#win-label { font-size:0.9rem; letter-spacing:6px; color:rgba(255,255,255,0.35); text-transform:uppercase; margin-bottom:4px; position:relative;z-index:2; }
-#winner-name { font-family:'Orbitron',sans-serif; font-size:3rem; font-weight:900; letter-spacing:6px; margin-bottom:6px; position:relative;z-index:2; }
-#winner-game-tag { font-size:0.75rem; letter-spacing:4px; color:rgba(255,255,255,0.4); text-transform:uppercase; margin-bottom:10px; position:relative;z-index:2; }
+
+/* Animated light beams from top */
+#win-screen::before {
+  content:'';
+  position:absolute; inset:0;
+  background:
+    conic-gradient(from 270deg at 50% -10%,
+      transparent 0deg,
+      rgba(255,150,0,0.12) 15deg,
+      transparent 30deg,
+      rgba(255,50,0,0.08) 50deg,
+      transparent 65deg,
+      rgba(255,200,50,0.1) 80deg,
+      transparent 95deg
+    );
+  animation: winBeamSpin 8s linear infinite;
+  pointer-events:none; z-index:0;
+}
+
+/* Pulsing floor glow */
+#win-screen::after {
+  content:'';
+  position:absolute;
+  bottom:0; left:0; right:0; height:35%;
+  background: radial-gradient(ellipse at 50% 100%, rgba(255,100,0,0.3) 0%, transparent 70%);
+  animation: winFloorPulse 2s ease-in-out infinite alternate;
+  pointer-events:none; z-index:0;
+}
+
+@keyframes winBeamSpin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+@keyframes winFloorPulse {
+  0%   { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+#win-label {
+  font-size:0.75rem; letter-spacing:8px; text-transform:uppercase;
+  margin-bottom:2px; position:relative; z-index:2;
+  background: linear-gradient(90deg, rgba(255,255,255,0.3), rgba(255,255,255,0.7), rgba(255,255,255,0.3));
+  -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation: winLabelShimmer 2s linear infinite;
+  background-size: 200% auto;
+}
+@keyframes winLabelShimmer {
+  0%   { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+#winner-name {
+  font-family:'Orbitron',sans-serif; font-size:2.8rem; font-weight:900;
+  letter-spacing:5px; margin-bottom:2px; position:relative; z-index:2;
+  text-shadow:
+    0 0 20px currentColor,
+    0 0 50px currentColor,
+    0 0 80px currentColor;
+  animation: winNamePulse 1.5s ease-in-out infinite alternate;
+}
+@keyframes winNamePulse {
+  0%   { filter: drop-shadow(0 0 10px currentColor) drop-shadow(0 0 30px currentColor); }
+  100% { filter: drop-shadow(0 0 25px currentColor) drop-shadow(0 0 60px currentColor) drop-shadow(0 0 100px currentColor); }
+}
+
+#winner-game-tag {
+  font-size:0.65rem; letter-spacing:5px; color:rgba(255,220,100,0.6);
+  text-transform:uppercase; margin-bottom:8px; position:relative; z-index:2;
+}
+
 #win-char-img { display:none; }
-#win-char-canvas { height:200px; width:auto; object-fit:contain; margin-bottom:0; animation:winLaugh 0.35s ease-in-out infinite alternate; display:block; }
+#win-char-canvas {
+  height:200px; width:auto; object-fit:contain; margin-bottom:0;
+  animation:winLaugh 0.35s ease-in-out infinite alternate;
+  display:block;
+  filter: drop-shadow(0 0 20px currentColor) drop-shadow(0 0 40px rgba(255,150,0,0.5));
+}
 @keyframes winFloat { from{transform:translateY(0)} to{transform:translateY(-14px)} }
 @keyframes winLaugh {
   0%   { transform: rotate(-6deg) scale(1.0)  translateY(0px); }
@@ -646,6 +727,7 @@ body { background:var(--dark); font-family:'Rajdhani',sans-serif; overflow:hidde
   75%  { transform: rotate(-2deg) scale(1.06) translateY(-5px); }
   100% { transform: rotate(-6deg) scale(1.0)  translateY(0px); }
 }
+
 /* Victory text */
 .win-victory-text {
   font-family:'Orbitron',sans-serif; font-size:2.6rem; font-weight:900;
@@ -653,19 +735,19 @@ body { background:var(--dark); font-family:'Rajdhani',sans-serif; overflow:hidde
   margin-bottom:6px; position:relative; z-index:2;
 }
 .win-victory-text.booyah {
-  background:linear-gradient(135deg,#ff6a00,#ff2244,#ff6a00);
-  background-size:200% auto; -webkit-background-clip:text; background-clip:text;
+  background:linear-gradient(135deg,#ffcc00,#ff6a00,#ff2244,#ff6a00,#ffcc00);
+  background-size:300% auto; -webkit-background-clip:text; background-clip:text;
   -webkit-text-fill-color:transparent;
-  filter:drop-shadow(0 0 18px rgba(255,100,0,0.9)) drop-shadow(0 0 40px rgba(255,34,68,0.6));
-  animation:booyahPop 0.6s cubic-bezier(0.175,0.885,0.32,1.275) forwards, booyahShine 2s linear 0.6s infinite;
+  filter:drop-shadow(0 0 20px rgba(255,100,0,1)) drop-shadow(0 0 50px rgba(255,34,68,0.8));
+  animation:booyahPop 0.6s cubic-bezier(0.175,0.885,0.32,1.275) forwards, booyahShine 1.5s linear 0.6s infinite;
 }
 .win-victory-text.chicken {
   font-size:1.25rem; letter-spacing:2px;
-  background:linear-gradient(135deg,#f5c518,#fff7a1,#f5c518,#c8860a);
-  background-size:200% auto; -webkit-background-clip:text; background-clip:text;
+  background:linear-gradient(135deg,#fff7a1,#f5c518,#ffe066,#c8860a,#fff7a1);
+  background-size:300% auto; -webkit-background-clip:text; background-clip:text;
   -webkit-text-fill-color:transparent;
-  filter:drop-shadow(0 0 18px rgba(245,197,24,0.9)) drop-shadow(0 0 40px rgba(200,134,10,0.6));
-  animation:booyahPop 0.6s cubic-bezier(0.175,0.885,0.32,1.275) forwards, chickenShine 2s linear 0.6s infinite;
+  filter:drop-shadow(0 0 20px rgba(245,197,24,1)) drop-shadow(0 0 50px rgba(200,134,10,0.8));
+  animation:booyahPop 0.6s cubic-bezier(0.175,0.885,0.32,1.275) forwards, chickenShine 1.5s linear 0.6s infinite;
 }
 @keyframes booyahPop {
   0%   { transform:scale(0) rotate(-10deg); opacity:0; }
@@ -673,31 +755,82 @@ body { background:var(--dark); font-family:'Rajdhani',sans-serif; overflow:hidde
   80%  { transform:scale(0.95) rotate(-2deg); }
   100% { transform:scale(1) rotate(0deg); opacity:1; }
 }
-@keyframes booyahShine  { 0%{background-position:0% center} 100%{background-position:200% center} }
-@keyframes chickenShine { 0%{background-position:0% center} 100%{background-position:200% center} }
+@keyframes booyahShine  { 0%{background-position:0% center} 100%{background-position:300% center} }
+@keyframes chickenShine { 0%{background-position:0% center} 100%{background-position:300% center} }
+
 /* Win char wrap */
-.win-char-wrap { position:relative; display:flex; justify-content:center; align-items:flex-end; margin:10px 0; z-index:2; }
+.win-char-wrap {
+  position:relative; display:flex; justify-content:center; align-items:flex-end;
+  margin:8px 0; z-index:2;
+}
+/* Spotlight under character */
+.win-char-wrap::after {
+  content:'';
+  position:absolute; bottom:-10px; left:50%; transform:translateX(-50%);
+  width:120px; height:20px;
+  background: radial-gradient(ellipse, rgba(255,180,0,0.5) 0%, transparent 70%);
+  border-radius:50%;
+  animation: spotlightPulse 1s ease-in-out infinite alternate;
+}
+@keyframes spotlightPulse {
+  0%   { opacity:0.5; transform:translateX(-50%) scaleX(0.8); }
+  100% { opacity:1;   transform:translateX(-50%) scaleX(1.2); }
+}
+
 /* LOL bubble */
 .lol-bubble {
   position:absolute; top:-18px; right:8%;
-  background:rgba(255,255,255,0.95); color:#111;
+  background: linear-gradient(135deg,#fff5e0,#ffffff);
+  color:#111;
   font-family:'Orbitron',sans-serif; font-weight:900; font-size:1.1rem;
   padding:6px 14px; border-radius:22px 22px 22px 4px;
-  box-shadow:0 4px 20px rgba(0,0,0,0.5); white-space:nowrap; z-index:10;
+  box-shadow:0 4px 24px rgba(255,150,0,0.6), 0 2px 8px rgba(0,0,0,0.5);
+  white-space:nowrap; z-index:10;
   animation:lolBounce 0.45s ease-in-out infinite alternate, lolAppear 0.5s cubic-bezier(0.175,0.885,0.32,1.275) forwards;
 }
-.lol-bubble::after { content:''; position:absolute; bottom:-8px; left:12px; border:8px solid transparent; border-top-color:rgba(255,255,255,0.95); border-bottom:0; }
+.lol-bubble::after { content:''; position:absolute; bottom:-8px; left:12px; border:8px solid transparent; border-top-color:#ffffff; border-bottom:0; }
 @keyframes lolBounce { 0%{transform:scale(1) rotate(-3deg)} 100%{transform:scale(1.08) rotate(3deg)} }
 @keyframes lolAppear { 0%{transform:scale(0);opacity:0} 70%{transform:scale(1.1);opacity:1} 100%{transform:scale(1);opacity:1} }
+
 /* Win particles */
 .win-particle { position:absolute; pointer-events:none; border-radius:50%; animation:winParticle 1.2s ease-out forwards; }
 @keyframes winParticle { 0%{transform:translate(0,0) scale(1);opacity:1} 100%{transform:translate(var(--px),var(--py)) scale(0);opacity:0} }
 
-.btn-action { padding:11px 44px; border-radius:6px; font-family:'Orbitron',sans-serif; font-size:0.85rem; font-weight:700; letter-spacing:4px; cursor:pointer; text-transform:uppercase; transition:all 0.2s; margin:6px; }
-.btn-outline { background:transparent; border:2px solid rgba(255,255,255,0.3); color:rgba(255,255,255,0.6); }
-.btn-outline:hover { border-color:white; color:white; }
-.btn-solid { background:linear-gradient(135deg,var(--ff-orange),var(--ff-red)); border:none; color:white; filter:drop-shadow(0 0 14px rgba(255,106,0,0.5)); }
-.btn-solid:hover { transform:scale(1.05); }
+/* Horizontal divider line */
+.win-divider {
+  width:80%; height:1px; margin:8px auto;
+  background: linear-gradient(90deg, transparent, rgba(255,180,0,0.7), rgba(255,80,0,0.9), rgba(255,180,0,0.7), transparent);
+  position:relative; z-index:2;
+  box-shadow: 0 0 10px rgba(255,150,0,0.5);
+}
+
+/* Action buttons — upgraded */
+.btn-action {
+  padding:11px 38px; border-radius:30px;
+  font-family:'Orbitron',sans-serif; font-size:0.8rem; font-weight:700;
+  letter-spacing:3px; cursor:pointer; text-transform:uppercase;
+  transition:all 0.2s; margin:5px;
+  position:relative; overflow:hidden;
+}
+.btn-outline {
+  background: rgba(255,255,255,0.05);
+  border:1.5px solid rgba(255,255,255,0.35);
+  color:rgba(255,255,255,0.7);
+  box-shadow: 0 0 12px rgba(255,255,255,0.08), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+.btn-outline:hover { border-color:white; color:white; background:rgba(255,255,255,0.1); transform:scale(1.04); }
+.btn-solid {
+  background:linear-gradient(135deg,#ff8c00,#ff2244,#ff6a00);
+  background-size:200% auto;
+  border:none; color:white;
+  box-shadow: 0 0 20px rgba(255,106,0,0.7), 0 4px 16px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+  animation: rematchShimmer 2s linear infinite;
+}
+.btn-solid:hover { transform:scale(1.07); box-shadow: 0 0 35px rgba(255,106,0,1), 0 6px 24px rgba(0,0,0,0.5); }
+@keyframes rematchShimmer {
+  0%   { background-position:0% center; }
+  100% { background-position:200% center; }
+}
 
 /* FX */
 .particle { position:absolute; border-radius:50%; pointer-events:none; animation:particleFly 0.8s ease-out forwards; }
@@ -1131,9 +1264,10 @@ html, body {
     <img id="win-char-img" src="" alt="" style="display:none">
     <div class="lol-bubble" id="lol-bubble">LOL 😂</div>
   </div>
-  <div style="display:flex;gap:12px;position:relative;z-index:2;">
+  <div class="win-divider"></div>
+  <div style="display:flex;gap:10px;position:relative;z-index:2;margin-top:4px;">
     <button class="btn-action btn-outline" onclick="goToSelect()">← Select</button>
-    <button class="btn-action btn-solid" onclick="rematch()">Rematch</button>
+    <button class="btn-action btn-solid" onclick="rematch()">🔥 Rematch</button>
   </div>
 </div>
 
@@ -2593,7 +2727,76 @@ window.addEventListener('orientationchange', () => {
     fanfare.forEach(([f,s,d]) => note(f, t+s, d, 'sawtooth', 0.25));
     // triumphant drums
     [0, 0.44, 0.66, 1.2, 1.6].forEach(s => drum(90, t+s, 0.12, 0.45));
+    // play laugh sfx after fanfare
+    setTimeout(() => { if(!muted) playLaughSFX(); }, 2200);
     return { stop() {} };
+  }
+
+  // ---------- Laughing SFX ----------
+  function playLaughSFX() {
+    ensureCtx();
+    const t = ctx.currentTime;
+
+    // Laugh = rapid pitch-warbled modulated tone bursts that sound like "ha ha ha"
+    // Each "ha" = a short amplitude burst with pitch wobble
+    const laughPattern = [
+      { delay: 0.00, baseFreq: 380, warp: 60 },
+      { delay: 0.22, baseFreq: 360, warp: 55 },
+      { delay: 0.44, baseFreq: 370, warp: 65 },
+      { delay: 0.72, baseFreq: 340, warp: 50 },
+      { delay: 0.94, baseFreq: 355, warp: 58 },
+      { delay: 1.16, baseFreq: 345, warp: 52 },
+      { delay: 1.50, baseFreq: 320, warp: 45 },
+      { delay: 1.72, baseFreq: 330, warp: 48 },
+    ];
+
+    laughPattern.forEach(({ delay, baseFreq, warp }) => {
+      const start = t + delay;
+      const dur = 0.16;
+
+      // Main "ha" tone — sine with vibrato via LFO
+      const osc = ctx.createOscillator();
+      const lfo = ctx.createOscillator();
+      const lfoGain = ctx.createGain();
+      const envGain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(baseFreq, start);
+      osc.frequency.linearRampToValueAtTime(baseFreq - warp, start + dur);
+
+      lfo.type = 'sine';
+      lfo.frequency.value = 14; // vibrato speed
+      lfoGain.gain.value = 18;  // vibrato depth
+      lfo.connect(lfoGain);
+      lfoGain.connect(osc.frequency);
+
+      envGain.gain.setValueAtTime(0, start);
+      envGain.gain.linearRampToValueAtTime(0.32, start + 0.02);
+      envGain.gain.setValueAtTime(0.30, start + dur - 0.04);
+      envGain.gain.linearRampToValueAtTime(0, start + dur);
+
+      osc.connect(envGain);
+      envGain.connect(masterGain);
+
+      lfo.start(start); lfo.stop(start + dur + 0.05);
+      osc.start(start); osc.stop(start + dur + 0.05);
+
+      // Breath "h" noise hit at start of each laugh burst
+      const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.06), ctx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1);
+      const ns = ctx.createBufferSource();
+      const nf = ctx.createBiquadFilter();
+      nf.type = 'bandpass';
+      nf.frequency.value = 1800;
+      nf.Q.value = 1.2;
+      const ng = ctx.createGain();
+      ng.gain.setValueAtTime(0.18, start);
+      ng.gain.linearRampToValueAtTime(0, start + 0.06);
+      ns.buffer = buf;
+      ns.connect(nf); nf.connect(ng); ng.connect(masterGain);
+      ns.start(start); ns.stop(start + 0.07);
+    });
   }
 
   // ---------- Track switching ----------
