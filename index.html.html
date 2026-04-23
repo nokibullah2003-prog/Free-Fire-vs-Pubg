@@ -980,7 +980,18 @@ html, body {
   #round-display { font-size: 0.38rem; letter-spacing: 1px; }
 
   /* ── TOUCH CONTROLS: landscape compact ── */
-  #touch-controls { height: 90px; }
+  /* In landscape, remove absolute positioning so controls flow BELOW the arena */
+  #touch-controls {
+    height: 90px;
+    position: relative;
+    bottom: auto;
+    left: auto;
+    right: auto;
+    flex-shrink: 0;
+  }
+  /* Arena fills remaining space above the touch controls */
+  #arena { flex: 1; min-height: 0; }
+  #game-screen { flex-direction: column; overflow: hidden; }
   .touch-half { padding: 5px; gap: 4px; }
   .touch-group { gap: 3px; }
   .touch-row { gap: 3px; }
@@ -2258,17 +2269,33 @@ setupTouchControls();
 function resizeCanvas() {
   if (!canvas) return;
   const arena = document.getElementById('arena');
-  canvas.width = arena.clientWidth || window.innerWidth || 800;
-  canvas.height = arena.clientHeight || window.innerHeight || 360;
-  const touchPad = isMobile() ? 140 : 0;
-  GROUND_Y = canvas.height - 75 - touchPad;
+
+  // Use the arena's actual bounding rect for accurate sizing
+  const rect = arena.getBoundingClientRect();
+  const W = Math.round(rect.width)  || arena.clientWidth  || window.innerWidth  || 800;
+  const H = Math.round(rect.height) || arena.clientHeight || window.innerHeight || 360;
+
+  canvas.width  = W;
+  canvas.height = H;
+
+  // In landscape mobile the touch-controls sit BELOW the arena div,
+  // so the arena itself already excludes them — no extra pad needed.
+  const isLandscape = window.innerWidth > window.innerHeight;
+  const touchPad = (isMobile() && !isLandscape) ? 80 : 0;
+
+  GROUND_Y = canvas.height - 60 - touchPad;
+
   if (fighters.length === 2) {
     fighters[0].y = GROUND_Y - fighters[0].h;
     fighters[1].y = GROUND_Y - fighters[1].h;
   }
 }
-window.addEventListener('resize', () => { setTimeout(resizeCanvas, 100); });
-window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 600));
+window.addEventListener('resize', () => { setTimeout(resizeCanvas, 150); });
+window.addEventListener('orientationchange', () => {
+  // Give the browser time to finish rotating before we measure
+  setTimeout(resizeCanvas, 400);
+  setTimeout(resizeCanvas, 800); // second pass for slow devices
+});
 </script>
 
 <script>
@@ -3380,17 +3407,32 @@ setupTouchControls();
 function resizeCanvas() {
   if (!canvas) return;
   const arena = document.getElementById('arena');
-  canvas.width = arena.clientWidth || window.innerWidth || 800;
-  canvas.height = arena.clientHeight || window.innerHeight || 360;
-  const touchPad = isMobile() ? 140 : 0;
-  GROUND_Y = canvas.height - 75 - touchPad;
+
+  // Use the arena's actual bounding rect for accurate sizing
+  const rect = arena.getBoundingClientRect();
+  const W = Math.round(rect.width)  || arena.clientWidth  || window.innerWidth  || 800;
+  const H = Math.round(rect.height) || arena.clientHeight || window.innerHeight || 360;
+
+  canvas.width  = W;
+  canvas.height = H;
+
+  // In landscape mobile the touch-controls sit BELOW the arena div,
+  // so the arena itself already excludes them — no extra pad needed.
+  const isLandscape = window.innerWidth > window.innerHeight;
+  const touchPad = (isMobile() && !isLandscape) ? 80 : 0;
+
+  GROUND_Y = canvas.height - 60 - touchPad;
+
   if (fighters.length === 2) {
     fighters[0].y = GROUND_Y - fighters[0].h;
     fighters[1].y = GROUND_Y - fighters[1].h;
   }
 }
-window.addEventListener('resize', () => { setTimeout(resizeCanvas, 100); });
-window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 600));
+window.addEventListener('resize', () => { setTimeout(resizeCanvas, 150); });
+window.addEventListener('orientationchange', () => {
+  setTimeout(resizeCanvas, 400);
+  setTimeout(resizeCanvas, 800);
+});
 </script>
 
 <!-- ─── PORTRAIT WARNING ─── -->
