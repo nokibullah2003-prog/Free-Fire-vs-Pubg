@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -914,9 +914,9 @@ body { background:var(--dark); font-family:'Rajdhani',sans-serif; overflow:hidde
    RESPONSIVE — MOBILE (FULL REWRITE)
 ════════════════════════════════ */
 
-/* ── Always show touch controls, always hide keyboard hint ── */
-.controls-hint { display: none !important; }
-#touch-controls { display: flex !important; }
+/* ── Mobile: show touch controls, hide keyboard hint ── */
+/* On desktop these are overridden by the ≥700px media query */
+.controls-hint { display: none; }
 #touch-controls.visible { display: flex; }
 
 /* ── Prevent tap highlight & selection on all interactive elements ── */
@@ -1033,6 +1033,112 @@ html, body {
 }
 
 /* Portrait mode is fully supported */
+
+/* ══════════════════════════════════════
+   DESKTOP / LANDSCAPE  ≥ 700px wide
+══════════════════════════════════════ */
+@media (min-width: 700px) {
+
+  /* Unlock overflow so content can breathe */
+  body { overflow: auto; height: auto; min-height: 100vh; }
+  .screen { position: relative; min-height: 100vh; }
+  .screen.active { display: flex; }
+
+  /* ── SELECT SCREEN ── */
+  #select-screen {
+    padding: 24px 40px 20px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .main-title { font-size: clamp(1.8rem, 3.5vw, 3rem); letter-spacing: 6px; margin-bottom: 4px; }
+  .vs-word { font-size: 1.4rem; margin: 0 12px; }
+  .vs-inner { font-size: 1.4rem; }
+  .dvs-text { font-size: 2rem; width: 68px; height: 68px; }
+  .dvs-top, .dvs-bot { font-size: 1.1rem; }
+
+  .byline { font-size: 0.85rem; letter-spacing: 5px; margin-bottom: 12px; }
+  .tagline { font-size: 0.8rem; letter-spacing: 5px; margin-bottom: 20px; }
+
+  .mode-bar { gap: 14px; margin-bottom: 18px; }
+  .mode-btn { padding: 9px 28px; font-size: 0.78rem; letter-spacing: 3px; }
+
+  /* Two-column layout — wider cards */
+  .select-layout { gap: 0; width: 100%; max-width: 1100px; margin: 0 auto; }
+  .game-side { padding: 0 28px 16px; }
+  .game-logo { font-size: 1.1rem; letter-spacing: 5px; padding: 12px 0 16px; }
+
+  .chars-row { gap: 14px; justify-content: center; }
+  .char-card {
+    width: clamp(120px, 13vw, 190px);
+    height: clamp(190px, 20vw, 290px);
+    padding: 10px 8px;
+    border-radius: 16px;
+  }
+  .char-img { height: clamp(130px, 14vw, 208px); }
+  .char-name { font-size: clamp(0.7rem, 1vw, 0.95rem); letter-spacing: 2px; }
+  .char-tag { font-size: 0.55rem; }
+
+  .player-row { gap: 24px; margin-top: 16px; }
+  .player-ind { font-size: 0.78rem; }
+  #toggle-player-btn {
+    padding: 8px 24px !important;
+    font-size: 0.82rem !important;
+  }
+
+  .bottom-bar { padding: 14px 20px; }
+  .btn-fight { padding: 14px 90px; font-size: 1.2rem; letter-spacing: 7px; }
+
+  /* ── GAME SCREEN HUD ── */
+  .hud { padding: 10px 24px 8px; }
+  .fighter-info { width: 36%; gap: 5px; }
+  .fighter-name { font-size: 0.9rem; letter-spacing: 3px; }
+  .fighter-game-tag { font-size: 0.6rem; }
+  .health-bar-wrap { height: 16px; }
+  .special-bar-wrap { height: 6px; }
+  #timer { font-size: 2.8rem; }
+  #round-display { font-size: 0.7rem; letter-spacing: 4px; }
+
+  /* Show keyboard hint on desktop */
+  .controls-hint { display: flex !important; }
+  .ctrl-label { font-size: 0.62rem; }
+  .key { font-size: 0.62rem; padding: 2px 7px; }
+
+  /* Hide touch controls by default on desktop — shown only if user touches */
+  #touch-controls { display: none !important; }
+  #touch-controls.force-show { display: flex !important; }
+
+  /* Overlay text bigger */
+  #overlay-text { font-size: 7rem; letter-spacing: 12px; }
+
+  /* Win screen */
+  #winner-name { font-size: 4rem; letter-spacing: 8px; }
+  .win-victory-text { font-size: 3.4rem; }
+  .win-victory-text.chicken { font-size: 1.6rem; }
+  #win-char-canvas { height: 260px !important; }
+  .btn-action { padding: 13px 50px; font-size: 0.9rem; letter-spacing: 4px; margin: 8px; }
+  #win-label { font-size: 0.9rem; letter-spacing: 10px; }
+}
+
+/* ══════════════════════════════════════
+   LARGE DESKTOP  ≥ 1100px wide
+══════════════════════════════════════ */
+@media (min-width: 1100px) {
+  .char-card {
+    width: clamp(160px, 11vw, 200px);
+    height: clamp(240px, 17vw, 310px);
+  }
+  .char-img { height: clamp(170px, 12vw, 220px); }
+  .chars-row { gap: 18px; }
+  .game-side { padding: 0 36px 18px; }
+  #timer { font-size: 3.2rem; }
+  #overlay-text { font-size: 8rem; }
+}
+
+/* ══════════════════════════════════════
+   TOUCH TOGGLE — show controls when
+   user actually touches on desktop
+══════════════════════════════════════ */
 
 /* Safe area insets for portrait */
 
@@ -2223,8 +2329,10 @@ function isMobile() {
 }
 
 function setupTouchControls() {
-  // Show touch pad always (it's hidden via CSS on desktop)
-  document.getElementById('touch-controls').classList.add('visible');
+  // Show touch pad on mobile; desktop shows it only on first touch
+  if (window.innerWidth < 700 || ('ontouchstart' in window) || navigator.maxTouchPoints > 0) {
+    document.getElementById('touch-controls').classList.add('visible');
+  }
 
   // Map: [elementId, keyName, isToggle]
   const bindings = [
@@ -3428,8 +3536,10 @@ function isMobile() {
 }
 
 function setupTouchControls() {
-  // Show touch pad always (it's hidden via CSS on desktop)
-  document.getElementById('touch-controls').classList.add('visible');
+  // Show touch pad on mobile; desktop shows it only on first touch
+  if (window.innerWidth < 700 || ('ontouchstart' in window) || navigator.maxTouchPoints > 0) {
+    document.getElementById('touch-controls').classList.add('visible');
+  }
 
   // Map: [elementId, keyName, isToggle]
   const bindings = [
@@ -3480,6 +3590,23 @@ function setupTouchControls() {
 
 setupTouchControls();
 
+// On desktop, reveal touch controls if the user actually touches the screen
+window.addEventListener('touchstart', function onFirstTouch() {
+  const tc = document.getElementById('touch-controls');
+  if (tc) { tc.classList.add('force-show'); }
+  window.removeEventListener('touchstart', onFirstTouch);
+}, { passive: true });
+
+// Show keyboard hint bar on desktop
+function updateControlsHint() {
+  const hint = document.querySelector('.controls-hint');
+  if (!hint) return;
+  const isDesktop = window.innerWidth >= 700 && !isMobile();
+  hint.style.display = isDesktop ? 'flex' : 'none';
+}
+updateControlsHint();
+window.addEventListener('resize', updateControlsHint);
+
 // Resize canvas when screen rotates or resizes
 function resizeCanvas() {
   if (!canvas) return;
@@ -3493,8 +3620,9 @@ function resizeCanvas() {
   canvas.width  = W;
   canvas.height = H;
 
-  // Portrait layout: touch controls are absolute overlay at bottom
-  const touchPad = isMobile() ? 80 : 0;
+  // On mobile show touch pad space; on desktop use full height
+  const isMobileDevice = isMobile() || window.innerWidth < 700;
+  const touchPad = isMobileDevice ? 80 : 0;
 
   GROUND_Y = canvas.height - 60 - touchPad;
 
@@ -3504,7 +3632,7 @@ function resizeCanvas() {
   }
 }
 window.addEventListener('resize', () => { setTimeout(resizeCanvas, 150); });
-/* orientationchange removed — portrait-only layout */
+window.addEventListener('orientationchange', () => { setTimeout(resizeCanvas, 250); });
 </script>
 
 
