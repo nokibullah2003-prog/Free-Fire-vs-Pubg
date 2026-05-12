@@ -1217,6 +1217,28 @@ html, body {
 #music-btn:hover { background: rgba(255,180,0,0.18); transform: scale(1.1); }
 #music-btn.muted { border-color: rgba(255,255,255,0.25); color: rgba(255,255,255,0.35); box-shadow: none; }
 
+/* === MOBILE-FIRST FIT FIXES (override) === */
+html, body { height: 100dvh !important; width: 100vw !important; overflow: hidden; }
+.screen { height: 100dvh !important; }
+
+@media (max-width: 760px) {
+  .select-layout { flex-direction: column !important; gap: 6px !important; }
+  .game-side { width: 100% !important; padding: 6px 8px !important; flex: 0 0 auto !important; }
+  .divider { width: 100% !important; height: 2px !important;
+    background: linear-gradient(to right, transparent, rgba(255,100,0,0.6), rgba(255,34,68,0.6), rgba(255,100,0,0.6), transparent) !important; }
+  .divider-vs { position: relative !important; top: auto !important; left: auto !important; transform: none !important;
+    flex-direction: row !important; margin: 2px auto !important; }
+
+  .chars-row { flex-wrap: nowrap !important; overflow-x: auto !important; overflow-y: hidden !important;
+    justify-content: flex-start !important; padding: 4px 6px 8px !important;
+    scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; width: 100%; }
+  .chars-row::-webkit-scrollbar { display: none; }
+  .chars-row > * { scroll-snap-align: center; flex: 0 0 auto; }
+
+  #select-screen { overflow-y: auto !important; overflow-x: hidden !important; padding-bottom: 80px; }
+  .bottom-bar { position: sticky; bottom: 0; background: linear-gradient(to top, rgba(0,0,0,0.9) 60%, transparent); z-index: 10; }
+}
 </style>
 </head>
 
